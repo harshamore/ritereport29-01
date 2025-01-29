@@ -1,4 +1,5 @@
 import streamlit as st
+import replicate
 
 # --------------------------------------------------------------------
 # Hidden Lists (Not displayed in the Streamlit App)
@@ -87,15 +88,57 @@ profit_loss_labels = [
 # --------------------------------------------------------------------
 # Streamlit App
 # --------------------------------------------------------------------
-st.title("Chart of Account Input Form")
 
-# 1. Input for Chart of Account Name
+st.title("Chart of Account Classification App (IND AS)")
+
+# 1. User Inputs
 chart_of_account_name = st.text_input("Enter Chart of Account Name:")
-
-# 2. Dropdown for selecting Debit or Credit
 context = st.selectbox("Debit or Credit:", ["Debit", "Credit"])
 
-# 3. Display user input (basic example)
-st.write("## Your Selections:")
-st.write("**Chart of Account Name:**", chart_of_account_name if chart_of_account_name else "_(Not entered)_")
-st.write("**Context:**", context)
+# Button to trigger classification
+if st.button("Classify"):
+    # Combine both lists into one string to pass to the model
+    # (Large lists may cause token issues; adjust if needed)
+    all_labels = balance_sheet_labels + profit_loss_labels
+    labels_str = "\n".join(all_labels)
+
+    # Build the prompt
+    prompt_text = f"""
+    You are a highly qualified Indian Accountant with decades of experience in mapping 
+    Trial balances to IND AS labels and eventually creating financial statements like 
+    Balance Sheet, Profit and Loss, Statement of Cash Flows and Statement of Cash Equities.
+
+    In your response, first identify if the Chart of Account Name belongs to "Balance sheet mapping" 
+    or "Profit and Loss mapping" (exactly one), and then provide the right classification label 
+    from the list. The response must have two fields:
+    
+    1. The correct classification (label)
+    2. A short reasoning with the relevant Ind AS number.
+
+    chart_of_account_name = {chart_of_account_name}
+    context = {context}
+    Labels = {labels_str}
+    """
+
+    try:
+        # Call the Replicate model
+        # Replace "deepseek-org/deepseek-model" with the actual model name or version in replicate
+        output = replicate.run(
+            "deepseek-org/deepseek-model",
+            input={"prompt": prompt_text}
+        )
+
+        # 'output' typically is a list or string (depending on the model’s output format).
+        # Here, we'll just display the raw response. 
+        # If the model returns multiple outputs, you might need to parse the first element or specific keys.
+        st.markdown("### Model Response")
+        if isinstance(output, list):
+            # If the model returns a list of strings, combine them
+            final_answer = "\n\n".join(output)
+        else:
+            final_answer = str(output)
+        
+        st.write(final_answer)
+
+    except Exception as e:
+        st.error(f"Error calling Replicate: {e}")
