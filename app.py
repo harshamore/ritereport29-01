@@ -1,6 +1,9 @@
 import streamlit as st
 import replicate
 
+replicate_api_token = st.secrets["replicate_api_key"]
+client = replicate.Client(api_token=replicate_api_token)
+
 # --------------------------------------------------------------------
 # Hidden Lists (Not displayed in the Streamlit App)
 # --------------------------------------------------------------------
@@ -121,8 +124,6 @@ if st.button("Classify"):
     """
 
     try:
-        replicate_api_token = st.secrets["replicate_api_key"]
-        client = replicate.Client(api_token=replicate_api_token)
         # Call the Replicate model
         
         output = replicate.run(
