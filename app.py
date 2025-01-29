@@ -121,10 +121,12 @@ if st.button("Classify"):
     """
 
     try:
+        replicate_api_token = st.secrets["replicate_api_key"]
+        client = replicate.Client(api_token=replicate_api_token)
         # Call the Replicate model
-        # Replace "deepseek-org/deepseek-model" with the actual model name or version in replicate
+        
         output = replicate.run(
-            "deepseek-org/deepseek-model",
+            "deepseek-ai/deepseek-r1",
             input={"prompt": prompt_text}
         )
 
